@@ -2,14 +2,20 @@
 #include <stdlib.h> 
 #include <unistd.h>  //Header file for sleep(). man 3 sleep for details. 
 #include <pthread.h> 
+#include <string.h>
+
+pthread_t camera_trigger_thread_id;
+
+static void trigger_camera(void)
+{
   
-// A normal C function that is executed as a thread  
-// when its name is specified in pthread_create() 
+}
+  
 void *myThreadFun(void *vargp) 
 { 
-    sleep(1); 
-    printf("Printing GeeksQuiz from Thread \n"); 
-    return NULL; 
+  sleep(1); 
+  system("ls");
+  return NULL; 
 } 
    
 int main() 
