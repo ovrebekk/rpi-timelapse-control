@@ -1,0 +1,2 @@
+interval: 30
+filename: tl_%Y%m%d-%H%M%S.%c
