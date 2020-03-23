@@ -1,29 +1,40 @@
 #include <stdio.h> 
 #include <stdlib.h> 
-#include <unistd.h>  //Header file for sleep(). man 3 sleep for details. 
+#include <unistd.h> 
 #include <pthread.h> 
 #include <string.h>
+#include <time.h>
 
+#define CMD_STRING "gphoto2 --capture-image-and-download --filename \"%Y%m%d-%H%M%S.%C\"" 
 pthread_t camera_trigger_thread_id;
 
 static void trigger_camera(void)
 {
+  static struct tm * current_time;
+  static time_t lt;
+  static char time_str_buf[80];
+  lt = time(NULL);  
+  current_time = localtime(&lt);
+  strftime(time_str_buf, 80, "%Y%m%d-%H%M%S.%C", current_time);
+  printf("Taking picture at %s - %s\n", asctime(current_time), time_str_buf);
+  system(CMD_STRING);
   
 }
   
-void *myThreadFun(void *vargp) 
+void *cameraShootingThread(void *vargp) 
 { 
-  sleep(1); 
-  system("ls");
+  while(1)
+  {
+    trigger_camera();
+    sleep(30); 
+  }
   return NULL; 
 } 
    
 int main() 
 { 
-    pthread_t thread_id; 
-    printf("Before Thread\n"); 
-    pthread_create(&thread_id, NULL, myThreadFun, NULL); 
-    pthread_join(thread_id, NULL); 
-    printf("After Thread\n"); 
+    printf("Camera control started\n"); 
+    pthread_create(&camera_trigger_thread_id, NULL, cameraShootingThread, NULL); 
+    pthread_join(camera_trigger_thread_id, NULL); 
     exit(0); 
 }

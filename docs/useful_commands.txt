@@ -1,0 +1,5 @@
+sudo mount -t vfat /dev/sda1 /media/usb -o uid=1000
+sudo umount /dev/sda1
+
+// Mounting USB folder into the FTP 
+sudo mount --bind /externaldir /local_bind_point
