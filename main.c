@@ -7,10 +7,14 @@
 
 #define STRING_MAXLENGTH 80
 
+#define PRINTF_CL_YELLOW 	"\033[01;33m"
+#define PRINTF_CL_DEFAULT 	"\033[0m"
+#define PRINTF_CL_RED		"\033[1;31m"
+
 #define CMD_STRING_PRE "gphoto2 --capture-image-and-download --filename "
 #define CMD_STRING_POST ".%C"
  
-pthread_t camera_trigger_thread_id;
+pthread_t camera_shooting_thread_id, camera_interval_thread_id;
 
 struct 
 {
@@ -61,14 +65,20 @@ static int load_config_from_file(void)
   return 0;
 }
 
-static void trigger_camera(void)
+static int file_exists(char *file_name)
+{
+	return access(file_name, F_OK) != -1;
+}
+
+static time_t trigger_camera(void)
 {
   static struct tm * current_time;
   static time_t lt;
   static char time_str_buf[80];
   lt = time(NULL);  
   current_time = localtime(&lt);
-  strftime(time_str_buf, 80, "%Y%m%d-%H%M%S", current_time);
+  strftime(time_str_buf, 80, timelapse_config.name, current_time);
+  printf(PRINTF_CL_DEFAULT);
   printf("Taking picture at %s - %s\n", asctime(current_time), time_str_buf);
   
   static char cmd_string[128];
@@ -77,17 +87,43 @@ static void trigger_camera(void)
   strcat(cmd_string, CMD_STRING_POST);
   system(cmd_string);
   
+  return lt;
 }
-  
+
 void *cameraShootingThread(void *vargp) 
 { 
-  while(1)
+  static struct tm * current_time;
+  time_t trigger_time = trigger_camera();
+  
+  // Check if file exists
+  static char pic_name[64];
+  static int pic_found;
+  for(int i = 0; i < 10; i++)
   {
-    trigger_camera();
-    sleep(timelapse_config.interval_s); 
+	  current_time = localtime(&trigger_time);
+	  strftime(pic_name, 80, timelapse_config.name, current_time);
+	  strcat(pic_name, ".jpg");
+	  if((pic_found = file_exists(pic_name))) break;
+	  trigger_time++;
   }
+  if(pic_found)
+  {
+	  printf(PRINTF_CL_YELLOW); 
+	  printf("JPG found: %s\n", pic_name);
+	  printf(PRINTF_CL_DEFAULT);
+  }
+	  
   return NULL; 
 } 
+
+void *cameraIntervalThread(void *vargp)
+{
+	while(1)
+	{
+		pthread_create(&camera_shooting_thread_id, NULL, cameraShootingThread, NULL); 
+		sleep(timelapse_config.interval_s); 
+	}
+}
    
 int main() 
 { 
@@ -95,7 +131,7 @@ int main()
     
   load_config_from_file();
 
-  pthread_create(&camera_trigger_thread_id, NULL, cameraShootingThread, NULL); 
-  pthread_join(camera_trigger_thread_id, NULL); 
+  pthread_create(&camera_interval_thread_id, NULL, cameraIntervalThread, NULL); 
+  pthread_join(camera_interval_thread_id, NULL); 
   exit(0); 
 }
