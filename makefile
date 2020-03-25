@@ -6,5 +6,5 @@ DEPS =
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-tlcontrolmake: main.o
-	$(CC) -o tlcontrol main.o $(LDFLAGS)
+tlcontrolmake: main.o config_file_reader.o
+	$(CC) -o tlcontrol main.o config_file_reader.o $(LDFLAGS)

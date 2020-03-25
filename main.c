@@ -4,6 +4,7 @@
 #include <pthread.h> 
 #include <string.h>
 #include <time.h>
+#include "config_file_reader.h"
 
 #define STRING_MAXLENGTH 80
 
@@ -14,55 +15,19 @@
 #define CMD_STRING_PRE "gphoto2 --capture-image-and-download --filename "
 #define CMD_STRING_POST ".%C"
  
-pthread_t camera_shooting_thread_id, camera_interval_thread_id;
+static timelapse_config_t	m_local_config;
 
-struct 
-{
-  int interval_s;
-  char name[STRING_MAXLENGTH];
-}timelapse_config;
+pthread_t camera_shooting_thread_id, camera_interval_thread_id;
 
 static int load_config_from_file(void)
 {
-  FILE *fptr;
-  char work_string[128], config_type[32];
   // Setting default settings in case of missing config parameters
-  timelapse_config.interval_s = 30;
-  strcpy(timelapse_config.name, "%Y%m%d-%H%M%S");
-  
-  // Trying to open the config file
-  if((fptr = fopen("config.txt", "r")) == NULL)
+  if(get_config_from_file("config.txt", &m_local_config) != 0)
   {
-    printf("Error: Config file not found\r\n");
-    return -1;
+    m_local_config.interval_s = 30;
+    m_local_config.subdir_pr_day_enable = 0;
+    strcpy(m_local_config.name, "%Y%m%d-%H%M%S");
   }
-  // Going through the config file line for line
-  while(fgets(work_string, 128, fptr) != NULL)
-  {
-    char *div_ptr = strchr(work_string, ':');
-    if(div_ptr != NULL && div_ptr > work_string)
-    {
-      memcpy(config_type, work_string, div_ptr - work_string);
-      config_type[div_ptr - work_string] = 0;
-      div_ptr++;
-      while(*div_ptr == ' ') div_ptr++;
-      div_ptr[strchr(div_ptr, '\n')-div_ptr]=0;
-      if(strcmp(config_type, "interval") == 0)
-      {
-        int interval = atoi(div_ptr);
-        printf("Setting interval: %is\n", interval);
-        timelapse_config.interval_s = interval;
-      }
-      else if(strcmp(config_type, "filename") == 0)
-      {
-        printf("Setting filename: %s\n", div_ptr);
-        strcpy(timelapse_config.name, div_ptr);
-      }
-    }
-  }
-  // Close the config file
-  fclose(fptr);
-  return 0;
 }
 
 static int file_exists(char *file_name)
@@ -77,13 +42,13 @@ static time_t trigger_camera(void)
   static char time_str_buf[80];
   lt = time(NULL);  
   current_time = localtime(&lt);
-  strftime(time_str_buf, 80, timelapse_config.name, current_time);
+  strftime(time_str_buf, 80, m_local_config.name, current_time);
   printf(PRINTF_CL_DEFAULT);
   printf("Taking picture at %s - %s\n", asctime(current_time), time_str_buf);
   
   static char cmd_string[128];
   strcpy(cmd_string, CMD_STRING_PRE);
-  strcat(cmd_string, timelapse_config.name);
+  strcat(cmd_string, m_local_config.name);
   strcat(cmd_string, CMD_STRING_POST);
   system(cmd_string);
   
@@ -101,7 +66,7 @@ void *cameraShootingThread(void *vargp)
   for(int i = 0; i < 10; i++)
   {
 	  current_time = localtime(&trigger_time);
-	  strftime(pic_name, 80, timelapse_config.name, current_time);
+	  strftime(pic_name, 80, m_local_config.name, current_time);
 	  strcat(pic_name, ".jpg");
 	  if((pic_found = file_exists(pic_name))) break;
 	  trigger_time++;
@@ -121,7 +86,7 @@ void *cameraIntervalThread(void *vargp)
 	while(1)
 	{
 		pthread_create(&camera_shooting_thread_id, NULL, cameraShootingThread, NULL); 
-		sleep(timelapse_config.interval_s); 
+		sleep(m_local_config.interval_s); 
 	}
 }
    
