@@ -8,14 +8,18 @@
 
 #define STRING_MAXLENGTH 80
 
-#define PRINTF_CL_YELLOW 	"\033[01;33m"
-#define PRINTF_CL_DEFAULT 	"\033[0m"
-#define PRINTF_CL_RED		"\033[1;31m"
+#define PRINTF_CL_YELLOW    "\033[01;33m"
+#define PRINTF_CL_DEFAULT   "\033[0m"
+#define PRINTF_CL_RED       "\033[1;31m"
+#define PRINTF_CL_GREEN     "\033[1;32m"
 
 #define CMD_STRING_PRE "gphoto2 --capture-image-and-download --filename "
 #define CMD_STRING_POST ".%C"
  
 static timelapse_config_t	m_local_config;
+
+static int picture_success_counter = 0;
+static int picture_failure_counter = 0;
 
 pthread_t camera_shooting_thread_id, camera_interval_thread_id;
 
@@ -42,9 +46,12 @@ static time_t trigger_camera(void)
   static char time_str_buf[80];
   lt = time(NULL);  
   current_time = localtime(&lt);
-  strftime(time_str_buf, 80, m_local_config.name, current_time);
+  
+  printf(PRINTF_CL_GREEN);
+  printf("\nTaking picture at %sPics taken %i, pics failed %i\n", asctime(current_time),
+          picture_success_counter, picture_failure_counter);
   printf(PRINTF_CL_DEFAULT);
-  printf("Taking picture at %s - %s\n", asctime(current_time), time_str_buf);
+  printf("\n");
   
   static char cmd_string[128];
   strcpy(cmd_string, CMD_STRING_PRE);
@@ -58,6 +65,7 @@ static time_t trigger_camera(void)
 void *cameraShootingThread(void *vargp) 
 { 
   static struct tm * current_time;
+  
   time_t trigger_time = trigger_camera();
   
   // Check if file exists
@@ -73,9 +81,16 @@ void *cameraShootingThread(void *vargp)
   }
   if(pic_found)
   {
+    picture_success_counter++;
 	  printf(PRINTF_CL_YELLOW); 
 	  printf("JPG found: %s\n", pic_name);
 	  printf(PRINTF_CL_DEFAULT);
+  }
+  else
+  {
+    picture_failure_counter++;
+    printf(PRINTF_CL_RED);
+    printf("No image stored!\n");
   }
 	  
   return NULL; 
