@@ -15,6 +15,7 @@ int get_config_from_file(char *filename, timelapse_config_t *config)
     printf("Error: Config file not found\r\n");
     return -1;
   }
+  
   // Going through the config file line for line
   while(fgets(work_string, 128, fptr) != NULL)
   {
@@ -37,8 +38,14 @@ int get_config_from_file(char *filename, timelapse_config_t *config)
         printf("Setting filename: %s\n", div_ptr);
         strcpy(config->name, div_ptr);
       }
+      else if(strcmp(config_type, KEYWORD_CREATE_DIRS_DAY) == 0)
+      {
+        config->subdir_pr_day_enable = atoi(div_ptr);
+        printf("Adding pics to daily sub directories: %i\n", config->subdir_pr_day_enable);
+      }
     }
   }
+  
   // Close the config file
   fclose(fptr);
   return 0;
