@@ -11,6 +11,6 @@ typedef struct
   char name[80];
 }timelapse_config_t;
 
-int get_config_from_file(char *filename, timelapse_config_t *config);
+int get_config_from_file(const char *filename, timelapse_config_t *config);
 
 #endif

@@ -4,7 +4,7 @@
 #include <unistd.h> 
 #include <string.h>
 
-int get_config_from_file(char *filename, timelapse_config_t *config)
+int get_config_from_file(const char *filename, timelapse_config_t *config)
 {
   FILE *fptr;
   char work_string[128], config_type[32];
