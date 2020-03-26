@@ -101,10 +101,13 @@ void *cameraShootingThread(void *vargp)
 
 static void cameraIntervalGlutTimer(int value)
 {
-  glutTimerFunc(1000, cameraIntervalGlutTimer, value + 1);
-  if((value % m_local_config.interval_s) == 0)
+  static time_t last_shot_time;
+  static time_t current_time;
+  current_time = time(NULL);
+  if(value == 0 || (current_time - last_shot_time) >= m_local_config.interval_s)
   {
     pic_found = 0;
+    last_shot_time = current_time;
     pthread_create(&camera_shooting_thread_id, NULL, cameraShootingThread, NULL); 
   } 
   if(pic_found)
@@ -113,6 +116,7 @@ static void cameraIntervalGlutTimer(int value)
     gui_set_display_image(pic_name);
   }
   //printf("Secs: %i\n", value);
+  glutTimerFunc(100, cameraIntervalGlutTimer, value + 1);
 }
 
 static void InitializeGlutCallbacks()
@@ -135,7 +139,7 @@ int main(int argc, char** argv)
   load_config_from_file();
   printf("Camera control started\n"); 
   
-  glutTimerFunc(1000, cameraIntervalGlutTimer, 0);
+  glutTimerFunc(100, cameraIntervalGlutTimer, 0);
   
   glutMainLoop();
   exit(0); 
