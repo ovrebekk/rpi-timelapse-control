@@ -3,24 +3,39 @@
 #include <SOIL.h>
 
 GLuint active_texture;
-
+static void draw_quad(float x, float y, float x2, float y2)
+{
+  glBegin( GL_QUADS );
+  glTexCoord2d(0.0,0.0); glVertex2d(x, y);
+  glTexCoord2d(1.0,0.0); glVertex2d(x2, y);
+  glTexCoord2d(1.0,1.0); glVertex2d(x2, y2);
+  glTexCoord2d(0.0,1.0); glVertex2d(x, y2);
+  glEnd();
+}
 void gui_render()
 {
   glClearColor( 0, 0, 0, 1 );  // (In fact, this is the default.)
   glClear( GL_COLOR_BUFFER_BIT );
-  
+  glLoadIdentity();
+  gluOrtho2D(0, 100, 0, 100);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, active_texture);  
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glDepthMask(GL_FALSE);
   glDisable(GL_DEPTH_TEST);  
-  glBegin( GL_QUADS );
-  glTexCoord2d(0.0,0.0); glVertex2d(-1.0,-1.0);
-  glTexCoord2d(1.0,0.0); glVertex2d(+0.5,-1.0);
-  glTexCoord2d(1.0,1.0); glVertex2d(+0.5,+0.5);
-  glTexCoord2d(0.0,1.0); glVertex2d(-1.0,+0.5);
-  glEnd();
+  /*glBegin( GL_QUADS );
+  glTexCoord2d(0.0,0.0); glVertex2d(0.0,0.0);
+  glTexCoord2d(1.0,0.0); glVertex2d(100.0,-0.0);
+  glTexCoord2d(1.0,1.0); glVertex2d(100.0,100.0);
+  glTexCoord2d(0.0,1.0); glVertex2d(0.0,100.0);
+  glEnd();*/
+  draw_quad(0, 0, 100, 100);
+  draw_quad(0, 0, 50, 50);
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
   glDisable(GL_BLEND);

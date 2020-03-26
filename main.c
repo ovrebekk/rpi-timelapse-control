@@ -136,7 +136,6 @@ int main(int argc, char** argv)
   printf("Camera control started\n"); 
   
   glutTimerFunc(1000, cameraIntervalGlutTimer, 0);
-  printf("PIKK\n");
   
   glutMainLoop();
   exit(0); 
