@@ -1,3 +1,4 @@
+#include <GL/freeglut.h>
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <unistd.h> 
@@ -5,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include "config_file_reader.h"
+#include "gui.h"
 
 #define STRING_MAXLENGTH 80
 
@@ -20,6 +22,9 @@ static timelapse_config_t	m_local_config;
 
 static int picture_success_counter = 0;
 static int picture_failure_counter = 0;
+
+static char pic_name[64];
+static int pic_found;
 
 pthread_t camera_shooting_thread_id, camera_interval_thread_id;
 
@@ -69,8 +74,6 @@ void *cameraShootingThread(void *vargp)
   time_t trigger_time = trigger_camera();
   
   // Check if file exists
-  static char pic_name[64];
-  static int pic_found;
   for(int i = 0; i < 10; i++)
   {
 	  current_time = localtime(&trigger_time);
@@ -96,22 +99,45 @@ void *cameraShootingThread(void *vargp)
   return NULL; 
 } 
 
-void *cameraIntervalThread(void *vargp)
+static void cameraIntervalGlutTimer(int value)
 {
-	while(1)
-	{
-		pthread_create(&camera_shooting_thread_id, NULL, cameraShootingThread, NULL); 
-		sleep(m_local_config.interval_s); 
-	}
+  glutTimerFunc(1000, cameraIntervalGlutTimer, value + 1);
+  if((value % m_local_config.interval_s) == 0)
+  {
+    pic_found = 0;
+    pthread_create(&camera_shooting_thread_id, NULL, cameraShootingThread, NULL); 
+  } 
+  if(pic_found)
+  {
+    pic_found = 0;
+    gui_set_display_image(pic_name);
+  }
+  //printf("Secs: %i\n", value);
+}
+
+static void InitializeGlutCallbacks()
+{
+    glutDisplayFunc(gui_render);
 }
    
-int main() 
+int main(int argc, char** argv) 
 { 
-  printf("Camera control started\n"); 
-    
-  load_config_from_file();
+  glutInit(&argc, argv);
+  glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
+  glutInitWindowSize(600, 500);
+  glutInitWindowPosition(100, 100);
+  glutCreateWindow("CamControl");
 
-  pthread_create(&camera_interval_thread_id, NULL, cameraIntervalThread, NULL); 
-  pthread_join(camera_interval_thread_id, NULL); 
+  InitializeGlutCallbacks();
+  
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  
+  load_config_from_file();
+  printf("Camera control started\n"); 
+  
+  glutTimerFunc(1000, cameraIntervalGlutTimer, 0);
+  printf("PIKK\n");
+  
+  glutMainLoop();
   exit(0); 
 }

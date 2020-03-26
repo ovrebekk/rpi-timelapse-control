@@ -1,10 +1,11 @@
 CC=g++
 CFLAGS=-I.
-LDFLAGS=-pthread
+LDFLAGS=-lSOIL -lGL -lGLU -lglut -pthread
 DEPS = 
+OBJS = main.o config_file_reader.o gui.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-tlcontrolmake: main.o config_file_reader.o
-	$(CC) -o tlcontrol main.o config_file_reader.o $(LDFLAGS)
+tlcontrolmake: $(OBJS)
+	$(CC) -o tlcontrol $(OBJS) $(LDFLAGS)

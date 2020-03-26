@@ -1,3 +1,3 @@
 interval: 30
-filename: tl_%Y%m%d-%H%M%S.%c
+filename: tl_%Y%m%d-%H%M%S
 subdir_pr_day: 0
