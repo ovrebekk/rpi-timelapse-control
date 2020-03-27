@@ -28,18 +28,17 @@ void gui_render()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glDepthMask(GL_FALSE);
   glDisable(GL_DEPTH_TEST);  
-  /*glBegin( GL_QUADS );
-  glTexCoord2d(0.0,0.0); glVertex2d(0.0,0.0);
-  glTexCoord2d(1.0,0.0); glVertex2d(100.0,-0.0);
-  glTexCoord2d(1.0,1.0); glVertex2d(100.0,100.0);
-  glTexCoord2d(0.0,1.0); glVertex2d(0.0,100.0);
-  glEnd();*/
-  draw_quad(0, 0, 100, 100);
+  draw_quad(-100, -100, 200, 200);
   draw_quad(0, 0, 50, 50);
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
   glDisable(GL_BLEND);
   glutSwapBuffers(); // Required to copy color buffer onto the screen.
+}
+
+void gui_resize(int width, int height)
+{
+  
 }
 
 int gui_set_display_image(const char *fileName)

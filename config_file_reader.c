@@ -4,7 +4,12 @@
 #include <unistd.h> 
 #include <string.h>
 
-int get_config_from_file(const char *filename, timelapse_config_t *config)
+TimelapseConfig::TimelapseConfig(void)
+{
+  
+}
+
+int TimelapseConfig::getConfigFromFile(const char *filename)
 {
   FILE *fptr;
   char work_string[128], config_type[32];
@@ -31,17 +36,17 @@ int get_config_from_file(const char *filename, timelapse_config_t *config)
       {
         int interval = atoi(div_ptr);
         printf("Setting interval: %is\n", interval);
-        config->interval_s = interval;
+        interval_s = interval;
       }
       else if(strcmp(config_type, KEYWORD_FILENAME) == 0)
       {
         printf("Setting filename: %s\n", div_ptr);
-        strcpy(config->name, div_ptr);
+        strcpy(name, div_ptr);
       }
       else if(strcmp(config_type, KEYWORD_CREATE_DIRS_DAY) == 0)
       {
-        config->subdir_pr_day_enable = atoi(div_ptr);
-        printf("Adding pics to daily sub directories: %i\n", config->subdir_pr_day_enable);
+        subdir_pr_day_enable = atoi(div_ptr);
+        printf("Adding pics to daily sub directories: %i\n", subdir_pr_day_enable);
       }
     }
   }

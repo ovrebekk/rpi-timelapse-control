@@ -122,6 +122,7 @@ static void cameraIntervalGlutTimer(int value)
 static void InitializeGlutCallbacks()
 {
     glutDisplayFunc(gui_render);
+    glutReshapeFunc(gui_resize);
 }
    
 int main(int argc, char** argv) 
