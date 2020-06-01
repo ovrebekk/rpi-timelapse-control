@@ -50,3 +50,12 @@ int gui_set_display_image(const char *fileName)
   glutPostRedisplay();
   return (active_texture != 0);
 }
+
+int gui_free_current_image(void)
+{
+  if(active_texture != 0)
+  {
+    SOIL_free_image_data(active_texture);
+    active_texture = 0;
+  }
+}

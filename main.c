@@ -113,6 +113,7 @@ static void cameraIntervalGlutTimer(int value)
   if(pic_found)
   {
     pic_found = 0;
+    gui_free_current_image();
     gui_set_display_image(pic_name);
   }
   //printf("Secs: %i\n", value);
