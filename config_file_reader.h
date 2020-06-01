@@ -18,7 +18,10 @@ private:
 public:
   TimelapseConfig(void);
   int getConfigFromFile(const char *fileName);
-}
+  void setIntervalS(int interval){ interval_s = interval; }
+  int getIntervalS(void){ return interval_s; }
+  const char *getName(void){ return name; }
+};
 
 //int get_config_from_file(const char *filename, timelapse_config_t *config);
 

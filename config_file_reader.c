@@ -6,7 +6,11 @@
 
 TimelapseConfig::TimelapseConfig(void)
 {
-  
+	interval_s = 30;
+	subdir_pr_day_enable = 0;
+    strcpy(name, "%Y%m%d-%H%M%S");
+	//int camera_image_width;
+	//int camera_image_height;
 }
 
 int TimelapseConfig::getConfigFromFile(const char *filename)

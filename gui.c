@@ -55,7 +55,8 @@ int gui_free_current_image(void)
 {
   if(active_texture != 0)
   {
-    SOIL_free_image_data(active_texture);
+    glDeleteTextures(1, &active_texture);
+    //SOIL_free_image_data(active_texture);
     active_texture = 0;
   }
 }

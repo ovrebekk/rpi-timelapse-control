@@ -18,7 +18,7 @@
 #define CMD_STRING_PRE "gphoto2 --capture-image-and-download --filename "
 #define CMD_STRING_POST ".%C"
  
-static timelapse_config_t	m_local_config;
+static TimelapseConfig m_local_config;
 
 static int picture_success_counter = 0;
 static int picture_failure_counter = 0;
@@ -30,13 +30,8 @@ pthread_t camera_shooting_thread_id, camera_interval_thread_id;
 
 static int load_config_from_file(void)
 {
-  // Setting default settings in case of missing config parameters
-  if(get_config_from_file("config.txt", &m_local_config) != 0)
-  {
-    m_local_config.interval_s = 30;
-    m_local_config.subdir_pr_day_enable = 0;
-    strcpy(m_local_config.name, "%Y%m%d-%H%M%S");
-  }
+  // Try to load parameters from file (otherwise default parameters will be used)
+  m_local_config.getConfigFromFile("config.txt");
 }
 
 static int file_exists(char *file_name)
@@ -60,7 +55,7 @@ static time_t trigger_camera(void)
   
   static char cmd_string[128];
   strcpy(cmd_string, CMD_STRING_PRE);
-  strcat(cmd_string, m_local_config.name);
+  strcat(cmd_string, m_local_config.getName());
   strcat(cmd_string, CMD_STRING_POST);
   system(cmd_string);
   
@@ -77,7 +72,7 @@ void *cameraShootingThread(void *vargp)
   for(int i = 0; i < 10; i++)
   {
 	  current_time = localtime(&trigger_time);
-	  strftime(pic_name, 80, m_local_config.name, current_time);
+	  strftime(pic_name, 80, m_local_config.getName(), current_time);
 	  strcat(pic_name, ".jpg");
 	  if((pic_found = file_exists(pic_name))) break;
 	  trigger_time++;
@@ -104,7 +99,7 @@ static void cameraIntervalGlutTimer(int value)
   static time_t last_shot_time;
   static time_t current_time;
   current_time = time(NULL);
-  if(value == 0 || (current_time - last_shot_time) >= m_local_config.interval_s)
+  if(value == 0 || (current_time - last_shot_time) >= m_local_config.getIntervalS())
   {
     pic_found = 0;
     last_shot_time = current_time;
